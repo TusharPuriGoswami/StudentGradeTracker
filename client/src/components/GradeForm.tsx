@@ -118,8 +118,8 @@ export default function GradeForm({
               <FormLabel>Student</FormLabel>
               <Select
                 onValueChange={(value) => field.onChange(parseInt(value))}
-                defaultValue={field.value ? field.value.toString() : undefined}
-                value={field.value ? field.value.toString() : undefined}
+                defaultValue={field.value ? field.value.toString() : students && students.length > 0 ? students[0].id.toString() : "0"}
+                value={field.value ? field.value.toString() : students && students.length > 0 ? students[0].id.toString() : "0"}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -147,8 +147,8 @@ export default function GradeForm({
               <FormLabel>Course</FormLabel>
               <Select
                 onValueChange={(value) => field.onChange(parseInt(value))}
-                defaultValue={field.value ? field.value.toString() : undefined}
-                value={field.value ? field.value.toString() : undefined}
+                defaultValue={field.value ? field.value.toString() : courses && courses.length > 0 ? courses[0].id.toString() : "0"}
+                value={field.value ? field.value.toString() : courses && courses.length > 0 ? courses[0].id.toString() : "0"}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -200,7 +200,7 @@ export default function GradeForm({
               <FormLabel>Term</FormLabel>
               <Select
                 onValueChange={field.onChange}
-                defaultValue={field.value}
+                defaultValue={field.value || "Spring 2023"}
               >
                 <FormControl>
                   <SelectTrigger>

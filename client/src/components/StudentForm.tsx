@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { LoadingButton } from "@/components/ui/button";
+// No LoadingButton is needed since we're using the standard Button
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 
@@ -203,8 +203,8 @@ export default function StudentForm({
               <FormLabel>Year</FormLabel>
               <Select
                 onValueChange={(value) => field.onChange(parseInt(value))}
-                defaultValue={field.value.toString()}
-                value={field.value.toString()}
+                defaultValue={field.value ? field.value.toString() : "1"}
+                value={field.value ? field.value.toString() : "1"}
               >
                 <FormControl>
                   <SelectTrigger>
