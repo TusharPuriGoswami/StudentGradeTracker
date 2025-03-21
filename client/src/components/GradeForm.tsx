@@ -14,7 +14,7 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
@@ -22,7 +22,7 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from "@/components/ui/select";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
@@ -40,12 +40,12 @@ interface GradeFormProps {
 export default function GradeForm({
   defaultValues,
   onSuccess,
-  onCancel
+  onCancel,
 }: GradeFormProps) {
   const { toast } = useToast();
   const { data: students, isLoading: isLoadingStudents } = useStudents();
   const { data: courses, isLoading: isLoadingCourses } = useCourses();
-  
+
   const form = useForm<GradeFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -53,19 +53,19 @@ export default function GradeForm({
       courseId: 1,
       score: 0,
       term: "Spring 2023",
-      ...defaultValues
-    }
+      ...defaultValues,
+    },
   });
-  
+
   const isSubmitting = form.formState.isSubmitting;
-  
+
   // Reset form when defaultValues change
   useEffect(() => {
     if (defaultValues) {
       form.reset(defaultValues);
     }
   }, [defaultValues, form]);
-  
+
   const onSubmit = async (data: GradeFormValues) => {
     try {
       if (defaultValues?.id) {
@@ -83,13 +83,13 @@ export default function GradeForm({
           description: "Grade created successfully",
         });
       }
-      
+
       // Invalidate relevant queries
       queryClient.invalidateQueries({ queryKey: ["/api/grades"] });
       queryClient.invalidateQueries({ queryKey: ["/api/students"] });
       queryClient.invalidateQueries({ queryKey: ["/api/courses"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
-      
+
       if (onSuccess) {
         onSuccess();
       }
@@ -98,15 +98,15 @@ export default function GradeForm({
       toast({
         title: "Error",
         description: error.message || "Failed to save grade",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   };
-  
+
   if (isLoadingStudents || isLoadingCourses) {
     return <div>Loading...</div>;
   }
-  
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -118,8 +118,20 @@ export default function GradeForm({
               <FormLabel>Student</FormLabel>
               <Select
                 onValueChange={(value) => field.onChange(parseInt(value))}
-                defaultValue={field.value ? field.value.toString() : students && students.length > 0 ? students[0].id.toString() : "1"}
-                value={field.value ? field.value.toString() : students && students.length > 0 ? students[0].id.toString() : "1"}
+                defaultValue={
+                  field.value
+                    ? field.value.toString()
+                    : students && students.length > 0
+                      ? students[0].id.toString()
+                      : "1"
+                }
+                value={
+                  field.value
+                    ? field.value.toString()
+                    : students && students.length > 0
+                      ? students[0].id.toString()
+                      : "1"
+                }
               >
                 <FormControl>
                   <SelectTrigger>
@@ -138,7 +150,7 @@ export default function GradeForm({
             </FormItem>
           )}
         />
-        
+
         <FormField
           control={form.control}
           name="courseId"
@@ -147,8 +159,20 @@ export default function GradeForm({
               <FormLabel>Course</FormLabel>
               <Select
                 onValueChange={(value) => field.onChange(parseInt(value))}
-                defaultValue={field.value ? field.value.toString() : courses && courses.length > 0 ? courses[0].id.toString() : "1"}
-                value={field.value ? field.value.toString() : courses && courses.length > 0 ? courses[0].id.toString() : "1"}
+                defaultValue={
+                  field.value
+                    ? field.value.toString()
+                    : courses && courses.length > 0
+                      ? courses[0].id.toString()
+                      : "1"
+                }
+                value={
+                  field.value
+                    ? field.value.toString()
+                    : courses && courses.length > 0
+                      ? courses[0].id.toString()
+                      : "1"
+                }
               >
                 <FormControl>
                   <SelectTrigger>
@@ -167,7 +191,7 @@ export default function GradeForm({
             </FormItem>
           )}
         />
-        
+
         <FormField
           control={form.control}
           name="score"
@@ -175,23 +199,21 @@ export default function GradeForm({
             <FormItem>
               <FormLabel>Score</FormLabel>
               <FormControl>
-                <Input 
-                  type="number" 
-                  min={0} 
+                <Input
+                  type="number"
+                  min={0}
                   max={100}
                   step={0.1}
                   {...field}
                   onChange={(e) => field.onChange(parseFloat(e.target.value))}
                 />
               </FormControl>
-              <FormDescription>
-                Grade score from 0 to 100
-              </FormDescription>
+              <FormDescription>Grade score from 0 to 100</FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        
+
         <FormField
           control={form.control}
           name="term"
@@ -218,7 +240,7 @@ export default function GradeForm({
             </FormItem>
           )}
         />
-        
+
         <div className="flex justify-end space-x-2 pt-2">
           <Button
             type="button"
@@ -229,7 +251,11 @@ export default function GradeForm({
             Cancel
           </Button>
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Saving..." : defaultValues?.id ? "Update Grade" : "Add Grade"}
+            {isSubmitting
+              ? "Saving..."
+              : defaultValues?.id
+                ? "Update Grade"
+                : "Add Grade"}
           </Button>
         </div>
       </form>
