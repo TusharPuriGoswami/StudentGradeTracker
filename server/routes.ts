@@ -408,6 +408,176 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Auth routes
+  apiRouter.post('/auth/register', async (req, res) => {
+    try {
+      const userData = insertUserSchema.parse(req.body);
+      
+      // Check if username or email already exists
+      const existingUsername = await storage.getUserByUsername(userData.username);
+      if (existingUsername) {
+        return res.status(400).json({ error: 'Username already exists' });
+      }
+      
+      const existingEmail = await storage.getUserByEmail(userData.email);
+      if (existingEmail) {
+        return res.status(400).json({ error: 'Email already exists' });
+      }
+      
+      // Hash the password
+      const passwordHash = await hashPassword(userData.password);
+      
+      // Create the user
+      const user = await storage.createUser(userData, passwordHash);
+      
+      // Generate a token
+      const token = generateToken(user);
+      
+      // Return user data without password hash
+      const { passwordHash: _, ...userWithoutPassword } = user;
+      
+      res.status(201).json({
+        user: userWithoutPassword,
+        token
+      });
+    } catch (err) {
+      handleError(err, res);
+    }
+  });
+
+  apiRouter.post('/auth/login', async (req, res) => {
+    try {
+      const credentials = loginUserSchema.parse(req.body);
+      
+      // Find user by username or email
+      const user = await storage.getUserByUsernameOrEmail(credentials.usernameOrEmail);
+      if (!user) {
+        return res.status(401).json({ error: 'Invalid credentials' });
+      }
+      
+      // Check if password matches
+      const isPasswordValid = await comparePassword(credentials.password, user.passwordHash);
+      if (!isPasswordValid) {
+        return res.status(401).json({ error: 'Invalid credentials' });
+      }
+      
+      // Update last login time
+      await storage.updateUser(user.id, { lastLogin: new Date() });
+      
+      // Generate a token
+      const token = generateToken(user);
+      
+      // Return user data without password hash
+      const { passwordHash: _, ...userWithoutPassword } = user;
+      
+      res.json({
+        user: userWithoutPassword,
+        token
+      });
+    } catch (err) {
+      handleError(err, res);
+    }
+  });
+
+  // Protected user profile routes
+  apiRouter.get('/profile', authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      // Return user data without password hash
+      const { passwordHash: _, ...userWithoutPassword } = user;
+      
+      res.json(userWithoutPassword);
+    } catch (err) {
+      handleError(err, res);
+    }
+  });
+
+  apiRouter.put('/profile', authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      
+      const profileData = updateProfileSchema.parse(req.body);
+      
+      const updatedUser = await storage.updateUserProfile(userId, profileData);
+      if (!updatedUser) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      // Return user data without password hash
+      const { passwordHash: _, ...userWithoutPassword } = updatedUser;
+      
+      res.json(userWithoutPassword);
+    } catch (err) {
+      handleError(err, res);
+    }
+  });
+
+  apiRouter.put('/profile/password', authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      
+      const { currentPassword, newPassword } = req.body;
+      
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ error: 'Current password and new password are required' });
+      }
+      
+      // Get the user
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      // Verify current password
+      const isPasswordValid = await comparePassword(currentPassword, user.passwordHash);
+      if (!isPasswordValid) {
+        return res.status(401).json({ error: 'Current password is incorrect' });
+      }
+      
+      // Hash the new password
+      const newPasswordHash = await hashPassword(newPassword);
+      
+      // Update the password
+      await storage.updateUserPassword(userId, newPasswordHash);
+      
+      res.json({ message: 'Password updated successfully' });
+    } catch (err) {
+      handleError(err, res);
+    }
+  });
+
+  // Admin routes (protected by role)
+  apiRouter.get('/users', authenticateToken, checkRole(['admin']), async (_req, res) => {
+    try {
+      const users = await storage.getUsers();
+      
+      // Remove password hashes
+      const usersWithoutPasswords = users.map(user => {
+        const { passwordHash, ...userWithoutPassword } = user;
+        return userWithoutPassword;
+      });
+      
+      res.json(usersWithoutPasswords);
+    } catch (err) {
+      handleError(err, res);
+    }
+  });
+
   // Use the API router with the /api prefix
   app.use('/api', apiRouter);
 

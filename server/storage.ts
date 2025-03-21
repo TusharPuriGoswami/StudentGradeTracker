@@ -91,11 +91,13 @@ export class MemStorage implements IStorage {
     this.userCurrentId = 1;
     
     // Initialize with demo data
-    this.initializeDemoData();
+    this.initializeDemoData().catch(err => {
+      console.error('Error initializing demo data:', err);
+    });
   }
 
   // Helper methods for demo data
-  private initializeDemoData() {
+  private async initializeDemoData() {
     // Create courses
     const courseData: InsertCourse[] = [
       { courseId: 'MATH101', name: 'Mathematics 101', description: 'Introduction to advanced mathematics', credits: 3 },
@@ -117,8 +119,8 @@ export class MemStorage implements IStorage {
     
     studentData.forEach(student => this.createStudent(student));
     
-    // Create enrollments
-    const enrollmentData: InsertEnrollment[] = [
+    // Create enrollments - converting types to match schema
+    const enrollmentData: { studentId: number; courseId: number }[] = [
       { studentId: 1, courseId: 1 }, // Emily in Math 101
       { studentId: 1, courseId: 3 }, // Emily in Science 301
       { studentId: 1, courseId: 4 }, // Emily in History 202
@@ -134,18 +136,48 @@ export class MemStorage implements IStorage {
     
     // Create grades
     const gradeData: InsertGrade[] = [
-      { studentId: 1, courseId: 1, score: 98.5, term: 'Spring 2023' },
-      { studentId: 1, courseId: 3, score: 97.8, term: 'Spring 2023' },
-      { studentId: 1, courseId: 4, score: 99.2, term: 'Spring 2023' },
-      { studentId: 2, courseId: 2, score: 96.2, term: 'Spring 2023' },
-      { studentId: 2, courseId: 3, score: 96.0, term: 'Spring 2023' },
-      { studentId: 3, courseId: 1, score: 95.7, term: 'Spring 2023' },
-      { studentId: 3, courseId: 4, score: 95.8, term: 'Spring 2023' },
-      { studentId: 4, courseId: 2, score: 75.8, term: 'Spring 2023' },
-      { studentId: 4, courseId: 5, score: 73.8, term: 'Spring 2023' }
+      { studentId: 1, courseId: 1, score: '98.5', term: 'Spring 2023' },
+      { studentId: 1, courseId: 3, score: '97.8', term: 'Spring 2023' },
+      { studentId: 1, courseId: 4, score: '99.2', term: 'Spring 2023' },
+      { studentId: 2, courseId: 2, score: '96.2', term: 'Spring 2023' },
+      { studentId: 2, courseId: 3, score: '96.0', term: 'Spring 2023' },
+      { studentId: 3, courseId: 1, score: '95.7', term: 'Spring 2023' },
+      { studentId: 3, courseId: 4, score: '95.8', term: 'Spring 2023' },
+      { studentId: 4, courseId: 2, score: '75.8', term: 'Spring 2023' },
+      { studentId: 4, courseId: 5, score: '73.8', term: 'Spring 2023' }
     ];
     
     gradeData.forEach(grade => this.createGrade(grade));
+    
+    // Create demo users
+    const adminUser = {
+      id: this.userCurrentId++,
+      username: 'admin',
+      email: 'admin@example.com',
+      passwordHash: '$2a$10$B0z9R1OhPdj.DNvzCgwPseA91b9LsAnACVDxCKoQh7HY7lZ3B.2.u', // "admin123"
+      fullName: 'Administrator',
+      role: 'admin',
+      profileImageUrl: 'https://i.pravatar.cc/150?img=60',
+      isActive: true,
+      lastLogin: null,
+      createdAt: new Date()
+    };
+    
+    const regularUser = {
+      id: this.userCurrentId++,
+      username: 'teacher',
+      email: 'teacher@example.com',
+      passwordHash: '$2a$10$yCRV0.Aa62nQl.pGUuxjZe2tmuQc/YuuMN9L0GuWNADAJPKkxMZ9i', // "teacher123"
+      fullName: 'John Teacher',
+      role: 'user',
+      profileImageUrl: 'https://i.pravatar.cc/150?img=50',
+      isActive: true,
+      lastLogin: null,
+      createdAt: new Date()
+    };
+    
+    this.users.set(adminUser.id, adminUser);
+    this.users.set(regularUser.id, regularUser);
   }
 
   // Student operations
@@ -169,8 +201,12 @@ export class MemStorage implements IStorage {
     const id = this.studentCurrentId++;
     const timestamp = new Date();
     const newStudent: Student = { 
-      ...student, 
       id,
+      studentId: student.studentId,
+      name: student.name,
+      email: student.email,
+      year: student.year,
+      avatarUrl: student.avatarUrl || null,
       createdAt: timestamp
     };
     this.students.set(id, newStudent);
@@ -225,11 +261,19 @@ export class MemStorage implements IStorage {
     const totalScore = studentGrades.reduce((sum, grade) => sum + Number(grade.score), 0);
     const averageGrade = studentGrades.length > 0 ? totalScore / studentGrades.length : 0;
 
-    return {
-      ...student,
+    // Create a StudentWithCourses object with the correct properties
+    const studentWithCourses: StudentWithCourses = {
+      id: student.id,
+      studentId: student.studentId,
+      name: student.name,
+      email: student.email,
+      year: student.year,
+      avatarUrl: student.avatarUrl,
       courses: studentCourses.filter(Boolean) as { id: number; courseId: string; name: string; }[],
       averageGrade: Number(averageGrade.toFixed(1))
     };
+
+    return studentWithCourses;
   }
 
   async getStudentsWithCourses(): Promise<StudentWithCourses[]> {
@@ -254,8 +298,11 @@ export class MemStorage implements IStorage {
     const id = this.courseCurrentId++;
     const timestamp = new Date();
     const newCourse: Course = { 
-      ...course, 
       id,
+      name: course.name,
+      courseId: course.courseId,
+      description: course.description || null,
+      credits: course.credits,
       createdAt: timestamp
     };
     this.courses.set(id, newCourse);
@@ -310,11 +357,18 @@ export class MemStorage implements IStorage {
     const totalScore = courseGrades.reduce((sum, grade) => sum + Number(grade.score), 0);
     const averageGrade = courseGrades.length > 0 ? totalScore / courseGrades.length : 0;
 
-    return {
-      ...course,
+    // Create a CourseWithStudents object with the correct properties
+    const courseWithStudents: CourseWithStudents = {
+      id: course.id,
+      name: course.name,
+      courseId: course.courseId,
+      description: course.description,
+      credits: course.credits,
       students: courseStudents.filter(Boolean) as { id: number; studentId: string; name: string; }[],
       averageGrade: Number(averageGrade.toFixed(1))
     };
+
+    return courseWithStudents;
   }
 
   async getCoursesWithStudents(): Promise<CourseWithStudents[]> {
