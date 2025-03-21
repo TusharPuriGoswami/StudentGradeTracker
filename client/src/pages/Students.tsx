@@ -72,14 +72,14 @@ export default function Students() {
         
         // Filter by course
         const matchesCourse =
-          !courseFilter ||
+          !courseFilter || courseFilter === "all" ||
           student.courses?.some(
             (course) => course.courseId.toLowerCase() === courseFilter.toLowerCase()
           );
         
         // Filter by grade range
         let matchesGrade = true;
-        if (gradeFilter) {
+        if (gradeFilter && gradeFilter !== "all") {
           const avg = student.averageGrade || 0;
           switch (gradeFilter) {
             case "a":
@@ -225,7 +225,7 @@ export default function Students() {
                   <SelectValue placeholder="All Courses" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Courses</SelectItem>
+                  <SelectItem value="all">All Courses</SelectItem>
                   <SelectItem value="MATH101">Mathematics 101</SelectItem>
                   <SelectItem value="ENG201">English 201</SelectItem>
                   <SelectItem value="SCI301">Science 301</SelectItem>
@@ -240,7 +240,7 @@ export default function Students() {
                   <SelectValue placeholder="All Grades" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Grades</SelectItem>
+                  <SelectItem value="all">All Grades</SelectItem>
                   <SelectItem value="a">A (90-100%)</SelectItem>
                   <SelectItem value="b">B (80-89%)</SelectItem>
                   <SelectItem value="c">C (70-79%)</SelectItem>
