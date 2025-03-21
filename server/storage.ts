@@ -4,7 +4,7 @@ import {
   Enrollment, InsertEnrollment, enrollments,
   Grade, InsertGrade, grades,
   StudentWithCourses, CourseWithStudents, FullGrade,
-  DashboardStats
+  DashboardStats, User, InsertUser, UpdateProfile, users
 } from "@shared/schema";
 
 // Interface for storage operations
@@ -50,6 +50,18 @@ export interface IStorage {
   
   // Dashboard stats
   getDashboardStats(): Promise<DashboardStats>;
+  
+  // User operations
+  getUsers(): Promise<User[]>;
+  getUser(id: number): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  getUserByUsernameOrEmail(usernameOrEmail: string): Promise<User | undefined>;
+  createUser(user: InsertUser, passwordHash: string): Promise<User>;
+  updateUser(id: number, userData: Partial<User>): Promise<User | undefined>;
+  updateUserPassword(id: number, passwordHash: string): Promise<boolean>;
+  updateUserProfile(id: number, profile: UpdateProfile): Promise<User | undefined>;
+  deleteUser(id: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -57,22 +69,26 @@ export class MemStorage implements IStorage {
   private courses: Map<number, Course>;
   private enrollments: Map<number, Enrollment>;
   private grades: Map<number, Grade>;
+  private users: Map<number, User>;
   
   private studentCurrentId: number;
   private courseCurrentId: number;
   private enrollmentCurrentId: number;
   private gradeCurrentId: number;
+  private userCurrentId: number;
 
   constructor() {
     this.students = new Map();
     this.courses = new Map();
     this.enrollments = new Map();
     this.grades = new Map();
+    this.users = new Map();
     
     this.studentCurrentId = 1;
     this.courseCurrentId = 1;
     this.enrollmentCurrentId = 1;
     this.gradeCurrentId = 1;
+    this.userCurrentId = 1;
     
     // Initialize with demo data
     this.initializeDemoData();
@@ -481,6 +497,88 @@ export class MemStorage implements IStorage {
       recentActivity,
       topStudents
     };
+  }
+  
+  // User operations
+  async getUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
+  }
+
+  async getUser(id: number): Promise<User | undefined> {
+    return this.users.get(id);
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(user => user.username === username);
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(user => user.email === email);
+  }
+
+  async getUserByUsernameOrEmail(usernameOrEmail: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(
+      user => user.username === usernameOrEmail || user.email === usernameOrEmail
+    );
+  }
+
+  async createUser(user: InsertUser, passwordHash: string): Promise<User> {
+    const id = this.userCurrentId++;
+    const timestamp = new Date();
+    const newUser: User = {
+      id,
+      username: user.username,
+      email: user.email,
+      passwordHash,
+      fullName: user.fullName,
+      role: user.role || 'user',
+      profileImageUrl: user.profileImageUrl || null,
+      isActive: true,
+      lastLogin: null,
+      createdAt: timestamp
+    };
+    this.users.set(id, newUser);
+    return newUser;
+  }
+
+  async updateUser(id: number, userData: Partial<User>): Promise<User | undefined> {
+    const existingUser = this.users.get(id);
+    if (!existingUser) return undefined;
+
+    const updatedUser: User = {
+      ...existingUser,
+      ...userData
+    };
+    
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+
+  async updateUserPassword(id: number, passwordHash: string): Promise<boolean> {
+    const user = await this.getUser(id);
+    if (!user) return false;
+    
+    user.passwordHash = passwordHash;
+    this.users.set(id, user);
+    return true;
+  }
+
+  async updateUserProfile(id: number, profile: UpdateProfile): Promise<User | undefined> {
+    const user = await this.getUser(id);
+    if (!user) return undefined;
+    
+    const updatedUser: User = {
+      ...user,
+      fullName: profile.fullName || user.fullName,
+      profileImageUrl: profile.profileImageUrl !== undefined ? profile.profileImageUrl : user.profileImageUrl
+    };
+    
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+
+  async deleteUser(id: number): Promise<boolean> {
+    return this.users.delete(id);
   }
 }
 
