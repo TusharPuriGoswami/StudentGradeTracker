@@ -37,16 +37,16 @@ export default function Sidebar({ closeMenu }: SidebarProps) {
           <ul>
             {navigationItems.map((item) => (
               <li key={item.path} className="mb-1">
-                <Link href={item.path} onClick={handleItemClick}>
-                  <a
-                    className={cn(
-                      "flex items-center p-2 rounded hover:bg-white/10 transition-colors",
-                      location === item.path && "bg-white/20"
-                    )}
-                  >
-                    <item.icon className="w-5 h-5 mr-3" />
-                    <span>{item.name}</span>
-                  </a>
+                <Link 
+                  href={item.path} 
+                  onClick={handleItemClick}
+                  className={cn(
+                    "flex items-center p-2 rounded hover:bg-white/10 transition-colors",
+                    location === item.path && "bg-white/20"
+                  )}
+                >
+                  <item.icon className="w-5 h-5 mr-3" />
+                  <span>{item.name}</span>
                 </Link>
               </li>
             ))}

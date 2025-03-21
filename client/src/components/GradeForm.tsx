@@ -49,8 +49,8 @@ export default function GradeForm({
   const form = useForm<GradeFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      studentId: 0,
-      courseId: 0,
+      studentId: 1,
+      courseId: 1,
       score: 0,
       term: "Spring 2023",
       ...defaultValues
@@ -118,8 +118,8 @@ export default function GradeForm({
               <FormLabel>Student</FormLabel>
               <Select
                 onValueChange={(value) => field.onChange(parseInt(value))}
-                defaultValue={field.value ? field.value.toString() : students && students.length > 0 ? students[0].id.toString() : "0"}
-                value={field.value ? field.value.toString() : students && students.length > 0 ? students[0].id.toString() : "0"}
+                defaultValue={field.value ? field.value.toString() : students && students.length > 0 ? students[0].id.toString() : "1"}
+                value={field.value ? field.value.toString() : students && students.length > 0 ? students[0].id.toString() : "1"}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -147,8 +147,8 @@ export default function GradeForm({
               <FormLabel>Course</FormLabel>
               <Select
                 onValueChange={(value) => field.onChange(parseInt(value))}
-                defaultValue={field.value ? field.value.toString() : courses && courses.length > 0 ? courses[0].id.toString() : "0"}
-                value={field.value ? field.value.toString() : courses && courses.length > 0 ? courses[0].id.toString() : "0"}
+                defaultValue={field.value ? field.value.toString() : courses && courses.length > 0 ? courses[0].id.toString() : "1"}
+                value={field.value ? field.value.toString() : courses && courses.length > 0 ? courses[0].id.toString() : "1"}
               >
                 <FormControl>
                   <SelectTrigger>
