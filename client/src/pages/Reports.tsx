@@ -337,7 +337,7 @@ export default function Reports() {
                       <SelectValue placeholder="All Terms" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Terms</SelectItem>
+                      <SelectItem value="all">All Terms</SelectItem>
                       {terms.map(term => (
                         <SelectItem key={term} value={term}>{term}</SelectItem>
                       ))}
@@ -443,7 +443,7 @@ export default function Reports() {
                       <SelectValue placeholder="All Terms" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Terms</SelectItem>
+                      <SelectItem value="all">All Terms</SelectItem>
                       {terms.map(term => (
                         <SelectItem key={term} value={term}>{term}</SelectItem>
                       ))}
@@ -559,7 +559,7 @@ export default function Reports() {
                       <SelectValue placeholder="All Courses" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Courses</SelectItem>
+                      <SelectItem value="all">All Courses</SelectItem>
                       {courses?.map(course => (
                         <SelectItem key={course.id} value={course.id.toString()}>
                           {course.name}
@@ -573,7 +573,7 @@ export default function Reports() {
                       <SelectValue placeholder="All Terms" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Terms</SelectItem>
+                      <SelectItem value="all">All Terms</SelectItem>
                       {terms.map(term => (
                         <SelectItem key={term} value={term}>{term}</SelectItem>
                       ))}
@@ -701,7 +701,7 @@ export default function Reports() {
                       <SelectValue placeholder="All Courses" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Courses</SelectItem>
+                      <SelectItem value="all">All Courses</SelectItem>
                       {courses?.map(course => (
                         <SelectItem key={course.id} value={course.id.toString()}>
                           {course.name}
@@ -715,7 +715,7 @@ export default function Reports() {
                       <SelectValue placeholder="All Terms" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Terms</SelectItem>
+                      <SelectItem value="all">All Terms</SelectItem>
                       {terms.map(term => (
                         <SelectItem key={term} value={term}>{term}</SelectItem>
                       ))}

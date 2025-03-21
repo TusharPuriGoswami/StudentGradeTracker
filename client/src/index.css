@@ -10,4 +10,38 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
   }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight;
+  }
+  
+  h1, h2 {
+    @apply bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent;
+  }
+}
+
+@layer components {
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+  }
+  
+  .dashboard-card {
+    @apply card-hover;
+  }
+  
+  .glass-effect {
+    @apply bg-background/80 backdrop-blur-sm;
+  }
+  
+  .gradient-border {
+    @apply relative border-none before:absolute before:-inset-[1px] before:-z-10 before:rounded-[inherit] before:bg-gradient-to-r before:from-primary/50 before:to-primary;
+  }
+  
+  .animate-fade-in {
+    @apply animate-in fade-in duration-500;
+  }
+  
+  .animate-slide-up {
+    @apply animate-in slide-in-from-bottom-4 duration-500;
+  }
 }
