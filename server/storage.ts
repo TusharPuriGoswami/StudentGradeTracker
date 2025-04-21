@@ -176,6 +176,8 @@ export class MemStorage implements IStorage {
       createdAt: new Date()
     };
     
+
+    
     this.users.set(adminUser.id, adminUser);
     this.users.set(regularUser.id, regularUser);
   }
